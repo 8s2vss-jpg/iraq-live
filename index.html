@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iraq Live - منصة الألعاب والبثوث</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: #09090b; color: #f4f4f5; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* الهيدر العلوي */
+        header {
+            height: 60px; background: #121215; border-bottom: 1px solid #27272a;
+            display: flex; justify-content: space-between; align-items: center; padding: 0 20px; z-index: 100;
+        }
+        .logo { font-size: 1.5rem; font-weight: 900; color: #ff3b30; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+        .logo span { color: #fff; }
+        .search-bar { width: 320px; background: #1c1c21; border: 1px solid #3f3f46; border-radius: 20px; padding: 8px 16px; color: #fff; outline: none; }
+        .btn-primary { background: #ff3b30; color: #fff; border: none; padding: 8px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        /* المحتوى الرئيسي */
+        .main-layout { flex: 1; display: flex; height: calc(100vh - 60px); }
+
+        /* القائمة الجانبية الأيمن */
+        .sidebar { width: 240px; background: #121215; border-left: 1px solid #27272a; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        .sidebar-title { font-size: 0.85rem; color: #a1a1aa; font-weight: bold; }
+        .streamer-item { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 6px; border-radius: 8px; }
+        .streamer-item:hover { background: #1c1c21; }
+        .avatar-sm { width: 36px; height: 36px; border-radius: 50%; background: #ff9500; display: flex; justify-content: center; align-items: center; font-weight: bold; position: relative; }
+        .online-dot { position: absolute; bottom: 0; left: 0; width: 10px; height: 10px; background: #22c55e; border-radius: 50%; border: 2px solid #121215; }
+
+        /* منطقة المشغل الرئيسي والألعاب */
+        .video-container { flex: 1; background: #000; position: relative; display: flex; flex-direction: column; }
+        .video-player { flex: 1; background: linear-gradient(135deg, #181824, #0a0a0f); position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        
+        .stream-top-bar { position: absolute; top: 15px; right: 15px; left: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .streamer-profile { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 30px; backdrop-filter: blur(8px); }
+        .live-tag { background: #ff3b30; color: #fff; font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; font-weight: bold; }
+
+        /* شريط اختيار ألعاب البث */
+        .game-selector-bar {
+            position: absolute; top: 75px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 8px; background: rgba(18, 18, 21, 0.9); padding: 6px 12px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(8px); z-index: 10;
+        }
+        .game-tab { background: #27272a; border: none; color: #aaa; padding: 6px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
+        .game-tab.active { background: #ff3b30; color: #fff; }
+
+        /* منطقة استعراض اللعبة النشطة */
+        .game-box {
+            width: 85%; max-width: 500px; background: rgba(18, 18, 21, 0.9); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 16px; padding: 16px; backdrop-filter: blur(10px); margin-top: 40px; z-index: 5; text-align: center;
+        }
+        .game-title { font-size: 1rem; color: #ffd700; font-weight: bold; margin-bottom: 12px; }
+
+        /* 1. لعبة السباق */
+        .track { background: #111; height: 32px; border-radius: 16px; margin-bottom: 8px; position: relative; display: flex; align-items: center; border: 1px dashed #444; }
+        .car { position: absolute; right: 10px; transition: 0.3s ease; font-size: 1.2rem; }
+
+        /* 2. لعبة شد الحبل */
+        .tug-container { position: relative; width: 100%; height: 40px; background: #111; border-radius: 20px; border: 2px solid #333; overflow: hidden; display: flex; align-items: center; margin: 15px 0; }
+        .tug-bar { height: 100%; background: linear-gradient(to left, #ff3b30 50%, #3b82f6 50%); width: 100%; transition: 0.3s ease; }
+        .tug-rope-knot { position: absolute; top: 0; bottom: 0; width: 6px; background: #ffd700; left: 50%; transform: translateX(-50%); transition: 0.3s ease; }
+
+        /* 3. لعبة روليت الإقصاء */
+        .roulette-box { width: 140px; height: 140px; border-radius: 50%; border: 6px solid #ffd700; margin: 10px auto; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; font-weight: bold; background: #181824; transition: 1s ease-out; }
+
+        /* 4. لعبة الأسئلة والتحدي */
+        .quiz-option { background: #27272a; padding: 8px; border-radius: 8px; margin: 6px 0; cursor: pointer; font-size: 0.85rem; }
+        .quiz-option:hover { background: #3b82f6; }
+
+        /* قسم الدردشة والهدايا الجانبي */
+        .chat-section { width: 340px; background: #121215; border-right: 1px solid #27272a; display: flex; flex-direction: column; }
+        .chat-header { padding: 15px; border-bottom: 1px solid #27272a; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .chat-msg { background: #1c1c21; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; line-height: 1.4; }
+        .chat-user { color: #3b82f6; font-weight: bold; margin-left: 6px; }
+
+        .chat-controls { padding: 12px; border-top: 1px solid #27272a; display: flex; flex-direction: column; gap: 8px; }
+        .input-box { display: flex; gap: 8px; }
+        .chat-input { flex: 1; background: #1c1c21; border: 1px solid #3f3f46; border-radius: 8px; padding: 10px; color: #fff; outline: none; }
+        .gift-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .btn-gift { background: #27272a; border: 1px solid #3f3f46; color: #fff; padding: 8px 4px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; text-align: center; }
+        .btn-gift:hover { background: #ff9500; border-color: #ff9500; }
+        
+        .floating-container { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+        .floating-item { position: absolute; font-size: 2.5rem; animation: floatUp 2s ease-out forwards; bottom: 20%; right: 40%; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(0.8); } 100% { opacity: 0; transform: translateY(-250px) scale(1.6); } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">🇮🇶 IRAQ <span>LIVE</span></div>
+        <input type="text" class="search-bar" placeholder="ابحث عن ألعاب، قنوات...">
+        <button class="btn-primary">تسجيل الدخول</button>
+    </header>
+
+    <div class="main-layout">
+        <div class="sidebar">
+            <div class="sidebar-title">الألعاب المتاحة</div>
+            <div class="streamer-item" onclick="switchGame('race')">🏁 سباق السيارات</div>
+            <div class="streamer-item" onclick="switchGame('tug')">🪢 شد الحبل</div>
+            <div class="streamer-item" onclick="switchGame('roulette')">🎰 روليت الإقصاء</div>
+            <div class="streamer-item" onclick="switchGame('quiz')">💡 تحدي المعلومات</div>
+        </div>
+
+        <div class="video-container">
+            <div class="floating-container" id="floatContainer"></div>
+            
+            <div class="video-player">
+                <div class="stream-top-bar">
+                    <div class="streamer-profile">
+                        <div class="avatar-sm">س</div>
+                        <div>
+                            <div style="font-size:0.9rem; font-weight:bold;">بث سيف - ألعاب التفاعل</div>
+                            <div style="font-size:0.75rem; color:#aaa;">👁️ 5.8K مشاهد</div>
+                        </div>
+                        <span class="live-tag">LIVE</span>
+                    </div>
+                </div>
+
+                <!-- شريط ألعاب البث -->
+                <div class="game-selector-bar">
+                    <button class="game-tab active" id="btn-race" onclick="switchGame('race')">🏁 سباق Cars</button>
+                    <button class="game-tab" id="btn-tug" onclick="switchGame('tug')">🪢 شد الحبل</button>
+                    <button class="game-tab" id="btn-roulette" onclick="switchGame('roulette')">🎰 روليت الإقصاء</button>
+                    <button class="game-tab" id="btn-quiz" onclick="switchGame('quiz')">💡 سؤال وجواب</button>
+                </div>
+
+                <!-- شاشة الألعاب التفاعلية -->
+                <div class="game-box">
+                    <!-- 1. سباق السيارات -->
+                    <div id="game-race">
+                        <div class="game-title">🏆 سباق التكبيس بالهدايا (الأحمر vs الأزرق)</div>
+                        <div class="track"><div class="car" id="carRed">🏎️ الأحمر</div></div>
+                        <div class="track"><div class="car" id="carBlue">🚗 الأزرق</div></div>
+                    </div>
+
+                    <!-- 2. شد الحبل -->
+                    <div id="game-tug" style="display: none;">
+                        <div class="game-title">🪢 شد الحبل التفاعلي (ادعم بالوردة أو الصاروخ لسحب الحبل!)</div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: bold;">
+                            <span style="color: #ff3b30;">فريق الصقور 🦅</span>
+                            <span style="color: #3b82f6;">فريق الذئاب 🐺</span>
+                        </div>
+                        <div class="tug-container">
+                            <div class="tug-rope-knot" id="tugKnot"></div>
+                        </div>
+                    </div>
+
+                    <!-- 3. روليت الإقصاء -->
+                    <div id="game-roulette" style="display: none;">
+                        <div class="game-title">🎰 عجلة روليت إقصاء المتابعين</div>
+                        <div class="roulette-box" id="rouletteDisplay">🎯 اضغط تدوير</div>
+                        <button class="btn-primary" style="margin-top: 10px;" onclick="spinRoulette()">تدوير الروليت</button>
+                    </div>
+
+                    <!-- 4. تحدي المعلومات -->
+                    <div id="game-quiz" style="display: none;">
+                        <div class="game-title">💡 تحدي المعلومات وسؤال وجواب</div>
+                        <p style="font-size: 0.9rem; margin-bottom: 10px;">سؤال الجولة: ما عاصمة العراق؟</p>
+                        <div class="quiz-option" onclick="checkQuiz(this, true)">1. بغداد (إجابة صحيحة)</div>
+                        <div class="quiz-option" onclick="checkQuiz(this, false)">2. البصرة</div>
+                        <div class="quiz-option" onclick="checkQuiz(this, false)">3. أربيل</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-section">
+            <div class="chat-header">
+                <span>دردشة Iraq Live</span>
+                <span style="font-size: 0.8rem; color: #a1a1aa;">تفاعل مباشر</span>
+            </div>
+
+            <div class="chat-messages" id="chatContainer">
+                <div class="chat-msg"><span class="chat-user">علي:</span> منورين شباب البث! 🔥</div>
+                <div class="chat-msg"><span class="chat-user">حسن:</span> اسحبوا الحبل يا صقور 🦅</div>
+            </div>
+
+            <div class="chat-controls">
+                <div class="gift-bar">
+                    <button class="btn-gift" onclick="sendGift('🌹', 'red')">🌹 وردة</button>
+                    <button class="btn-gift" onclick="sendGift('🏎️', 'red')">🏎️ سيارة</button>
+                    <button class="btn-gift" onclick="sendGift('👑', 'blue')">👑 تاج</button>
+                    <button class="btn-gift" onclick="sendGift('🚀', 'both')">🚀 صاروخ</button>
+                </div>
+                <div class="input-box">
+                    <input type="text" class="chat-input" id="msgInput" placeholder="اكتب رسالة..." onkeypress="handleKey(event)">
+                    <button class="btn-primary" onclick="sendMessage()">إرسال</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentGame = 'race';
+        let redPos = 10, bluePos = 10;
+        let tugPosition = 50;
+
+        function switchGame(game) {
+            currentGame = game;
+            ['race', 'tug', 'roulette', 'quiz'].forEach(g => {
+                document.getElementById(`game-${g}`).style.display = (g === game) ? 'block' : 'none';
+                document.getElementById(`btn-${g}`).classList.toggle('active', g === game);
+            });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('msgInput');
+            const container = document.getElementById('chatContainer');
+            if (input.value.trim() !== '') {
+                const msg = document.createElement('div');
+                msg.className = 'chat-msg';
+                msg.innerHTML = `<span class="chat-user">أنت:</span> ${input.value}`;
+                container.appendChild(msg);
+                input.value = '';
+                container.scrollTop = container.scrollHeight;
+
+                if(currentGame === 'race') {
+                    bluePos += 15;
+                    if(bluePos > 220) bluePos = 10;
+                    document.getElementById('carBlue').style.right = bluePos + 'px';
+                }
+            }
+        }
+
+        function handleKey(e) { if (e.key === 'Enter') sendMessage(); }
+
+        function sendGift(emoji, team) {
+            const container = document.getElementById('chatContainer');
+            
+            const floatCont = document.getElementById('floatContainer');
+            const item = document.createElement('div');
+            item.className = 'floating-item';
+            item.innerText = emoji;
+            item.style.right = (30 + Math.random() * 30) + '%';
+            floatCont.appendChild(item);
+            setTimeout(() => item.remove(), 2000);
+
+            const msg = document.createElement('div');
+            msg.className = 'chat-msg';
+            msg.style.borderColor = '#ff9500';
+            msg.innerHTML = `<span class="chat-user" style="color:#ff9500;">داعم:</span> أرسل ${emoji} لتغيير نتيجة اللعبة!`;
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+
+            if (currentGame === 'race') {
+                if(team === 'red' || team === 'both') redPos += 25;
+                if(team === 'blue' || team === 'both') bluePos += 25;
+                if(redPos > 220) redPos = 10;
+                if(bluePos > 220) bluePos = 10;
+                document.getElementById('carRed').style.right = redPos + 'px';
+                document.getElementById('carBlue').style.right = bluePos + 'px';
+            } else if (currentGame === 'tug') {
+                tugPosition += (team === 'red') ? -10 : 10;
+                if(tugPosition < 10) tugPosition = 10;
+                if(tugPosition > 90) tugPosition = 90;
+                document.getElementById('tugKnot').style.left = tugPosition + '%';
+            }
+        }
+
+        function spinRoulette() {
+            const players = ['أحمد', 'سيف', 'مصطفى', 'حسين', 'مريم', 'علي'];
+            const display = document.getElementById('rouletteDisplay');
+            display.innerText = '🔄 جاري التدوير...';
+            setTimeout(() => {
+                const winner = players[Math.floor(Math.random() * players.length)];
+                display.innerText = `👑 المتبقي: ${winner}`;
+            }, 1200);
+        }
+
+        function checkQuiz(element, isCorrect) {
+            if(isCorrect) {
+                element.style.background = '#22c55e';
+                element.innerText += '  ✅ إجابة صحيحة!';
+            } else {
+                element.style.background = '#ef4444';
+            }
+        }
+    </script>
+</body>
+</html>
